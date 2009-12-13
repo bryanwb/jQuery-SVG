@@ -92,6 +92,7 @@ $.fn.hasClass = function(className) {
 /* Support attributes on SVG nodes. */
 var origAttr = $.fn.attr;
 
+//BWB: is this what i need to do for css?
 $.fn.attr = function(name, value, type) {
 	if (typeof name === 'string' && value === undefined) {
 		var val = origAttr.apply(this, [name, value, type]);
