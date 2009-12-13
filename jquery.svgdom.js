@@ -116,6 +116,51 @@ $.fn.attr = function(name, value, type) {
 	});
 };
 
+// BWB attempting to patch css manipulation of SVG
+//support manipulation of css styles
+var origCss = $.fn.css;
+
+$.fn.css = function(name, value, type) {
+    var revAttrName = function(name){
+	for (var jsName in $.svg._attrNames){
+	    if ($.svg._attrNames[jsName] === name){
+		return jsName;
+	    }
+	}
+	return name;
+    };
+
+	if (typeof name === 'string' && value === undefined) {
+		var val = origCss.apply(this, [name, value, type]);
+		return (val && val.baseVal ? val.baseVal.valueAsString : val);
+	}
+	var options = name;
+	if (typeof name === 'string') {
+		options = {};
+		options[name] = value;
+	}
+	return this.each(function() {
+	    if (isSVGElem(this)) {
+		for (var n in options) {
+		    //if Firefox
+		    if (this.style.MozBinding === "") {
+			var jsName = revAttrName(n);
+			console.log(jsName);
+			this.style[jsName] = options[n]; 
+			    (typeof options[n] === 'function' ? options[n]() : options[n]);
+		    } else {
+			this.style.setProperty(n,
+			    typeof options[n] == 'function' ? options[n]() : options[n]);
+		    }
+		}
+	    }
+	    else {
+		origCss.apply($(this), [name, value, type]);
+	    }
+	});
+};
+
+
 /* Support removing attributes on SVG nodes. */
 var origRemoveAttr = $.fn.removeAttr;
 
